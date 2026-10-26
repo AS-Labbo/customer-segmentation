@@ -60,11 +60,11 @@
     <div class="card">
       <form id="form">
         <label>Age <input name="age" type="number" min="18" max="100" value="35" required></label>
-        <label>Annual income <input name="income" type="number" min="0" value="85000" required></label>
+        <label>Annual income (₦) <input name="income" type="number" min="0" value="85000" required></label>
         <label>Spending score (1–100) <input name="spending_score" type="number" min="1" max="100" value="70" required></label>
         <label>Membership years <input name="membership_years" type="number" min="0" max="50" value="6" required></label>
         <label>Purchases per year <input name="purchase_frequency" type="number" min="0" value="30" required></label>
-        <label>Last purchase amount <input name="last_purchase_amount" type="number" min="0" step="0.01" value="650" required></label>
+        <label>Last purchase amount (₦) <input name="last_purchase_amount" type="number" min="0" step="0.01" value="650" required></label>
         <button type="submit">Predict segment</button>
       </form>
     </div>
@@ -82,8 +82,8 @@
 </main>
 <script>
 const colors = ["--c0", "--c1", "--c2", "--c3"].map(v => `var(${v})`);
-const fmt = (k, v) => k === "income" ? "$" + Math.round(v).toLocaleString()
-  : k === "last_purchase_amount" ? "$" + v.toFixed(0) : v.toFixed(1);
+const fmt = (k, v) => k === "income" ? "₦" + Math.round(v).toLocaleString()
+  : k === "last_purchase_amount" ? "₦" + Math.round(v).toLocaleString() : v.toFixed(1);
 const labels = { age: "Age", income: "Income", spending_score: "Spending score",
   membership_years: "Membership yrs", purchase_frequency: "Purchases / yr", last_purchase_amount: "Last purchase" };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
