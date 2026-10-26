@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Segmentation</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1f; --muted: #6b6b70; --border: #e3e3e0;
+    --accent: #2f6fdf; --c0: #2f6fdf; --c1: #1a9e77; --c2: #d95f02; --c3: #7570b3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #141416; --card: #1e1e21; --text: #ececee; --muted: #9c9ca3; --border: #2e2e33;
+      --accent: #6b9bff; --c0: #6b9bff; --c1: #3cc79a; --c2: #ff8a3d; --c3: #a39cf0; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 18px; margin: 40px 0 12px; }
+  .sub { color: var(--muted); margin: 0; }
+  .sub a { color: var(--accent); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .seg { border-top: 4px solid var(--seg); }
+  .seg h3 { margin: 0 0 2px; font-size: 16px; }
+  .seg .size { color: var(--muted); font-size: 13px; }
+  .seg p { font-size: 13px; color: var(--muted); margin: 8px 0; }
+  .bar { height: 6px; background: var(--border); border-radius: 3px; margin: 2px 0 8px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--seg); }
+  .kv { display: flex; justify-content: space-between; font-size: 12.5px; }
+  .kv b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  label { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+  input { font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); width: 100%; }
+  button { font: inherit; font-weight: 600; padding: 9px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; align-self: end; }
+  .two { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 820px) { .two { grid-template-columns: 1.4fr 1fr; } }
+  #result { min-height: 120px; }
+  #result .name { font-size: 20px; font-weight: 700; color: var(--seg); }
+  .err { color: #d33; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: var(--border); margin: 0 6px 6px 0; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Customer Segmentation</h1>
+  <p class="sub">K-Means clustering of retail customers for marketing analysis.
+    <span id="stats"></span> · <a href="/docs">API docs</a></p>
+
+  <h2>Segments</h2>
+  <div class="grid" id="segments"></div>
+
+  <h2>Classify a customer</h2>
+  <div class="two">
+    <div class="card">
+      <form id="form">
+        <label>Age <input name="age" type="number" min="18" max="100" value="35" required></label>
+        <label>Annual income <input name="income" type="number" min="0" value="85000" required></label>
+        <label>Spending score (1–100) <input name="spending_score" type="number" min="1" max="100" value="70" required></label>
+        <label>Membership years <input name="membership_years" type="number" min="0" max="50" value="6" required></label>
+        <label>Purchases per year <input name="purchase_frequency" type="number" min="0" value="30" required></label>
+        <label>Last purchase amount <input name="last_purchase_amount" type="number" min="0" step="0.01" value="650" required></label>
+        <button type="submit">Predict segment</button>
+      </form>
+    </div>
+    <div class="card" id="result"><span class="sub">Fill in the form to see which segment a customer belongs to.</span></div>
+  </div>
+
+  <h2>Score a CSV file</h2>
+  <div class="card">
+    <p class="sub" style="margin-bottom:12px">Columns needed: age, income, spending_score, membership_years, purchase_frequency, last_purchase_amount.</p>
+    <input type="file" id="csv" accept=".csv">
+    <div id="csvOut" style="margin-top:12px"></div>
+  </div>
+
+  <footer>Dataset: “Customer Segmentation Data for Marketing Analysis” (Kaggle). Built with FastAPI + scikit-learn.</footer>
+</main>
+<script>
+const colors = ["--c0", "--c1", "--c2", "--c3"].map(v => `var(${v})`);
+const fmt = (k, v) => k === "income" ? "$" + Math.round(v).toLocaleString()
+  : k === "last_purchase_amount" ? "$" + v.toFixed(0) : v.toFixed(1);
+const labels = { age: "Age", income: "Income", spending_score: "Spending score",
+  membership_years: "Membership yrs", purchase_frequency: "Purchases / yr", last_purchase_amount: "Last purchase" };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+async function loadSegments() {
+  const data = await (await fetch("/segments")).json();
+  document.getElementById("stats").textContent =
+    `${data.n_customers.toLocaleString()} customers · ${data.segments.length} segments`;
+  document.getElementById("segments").innerHTML = data.segments.map(s => `
+    <div class="card seg" style="--seg:${colors[s.id % 4]}">
+      <h3>${esc(s.name)}</h3>
+      <div class="size">${s.size} customers · ${(s.share * 100).toFixed(0)}%</div>
+      <div class="bar"><span style="width:${s.share * 100 * 2.5}%"></span></div>
+      <p>${esc(s.description)} Favourite category: <b>${esc(s.top_category)}</b>.</p>
+      ${Object.entries(s.profile).map(([k, v]) =>
+        `<div class="kv"><span>${labels[k]}</span><b>${fmt(k, v)}</b></div>`).join("")}
+    </div>`).join("");
+}
+
+document.getElementById("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const body = Object.fromEntries([...new FormData(e.target)].map(([k, v]) => [k, Number(v)]));
+  const out = document.getElementById("result");
+  const res = await fetch("/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const p = await res.json();
+  if (!res.ok) { out.innerHTML = `<p class="err">${esc(JSON.stringify(p.detail))}</p>`; return; }
+  out.style.setProperty("--seg", colors[p.segment_id % 4]);
+  out.innerHTML = `<div class="sub">Predicted segment</div>
+    <div class="name">${esc(p.segment_name)}</div>
+    <p>${esc(p.description)}</p>
+    <p class="sub">Favourite category in this segment: <b>${esc(p.top_category)}</b><br>
+    Distance to segment centre: ${p.distance_to_center} (lower = more typical)</p>`;
+});
+
+document.getElementById("csv").addEventListener("change", async e => {
+  const file = e.target.files[0]; if (!file) return;
+  const out = document.getElementById("csvOut");
+  const fd = new FormData(); fd.append("file", file);
+  const res = await fetch("/predict/csv", { method: "POST", body: fd });
+  const d = await res.json();
+  if (!res.ok) { out.innerHTML = `<p class="err">${esc(d.detail)}</p>`; return; }
+  const cols = Object.keys(d.preview[0] || {});
+  out.innerHTML = `<p>${d.rows} rows scored. ${Object.entries(d.counts).map(([k, v]) =>
+      `<span class="pill">${esc(k)}: ${v}</span>`).join("")}</p>
+    <div class="scroll"><table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join("")}</tr>
+    ${d.preview.map(r => `<tr>${cols.map(c => `<td>${esc(r[c])}</td>`).join("")}</tr>`).join("")}</table></div>
+    ${d.rows > 50 ? '<p class="sub">Showing first 50 rows.</p>' : ""}`;
+});
+
+loadSegments();
+</script>
+</body>
+</html>

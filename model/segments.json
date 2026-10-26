@@ -1,0 +1,116 @@
+{
+  "features": [
+    "age",
+    "income",
+    "spending_score",
+    "membership_years",
+    "purchase_frequency",
+    "last_purchase_amount"
+  ],
+  "n_clusters": 4,
+  "n_customers": 1000,
+  "silhouette": 0.1269,
+  "silhouette_by_k": {
+    "2": 0.1291,
+    "3": 0.1186,
+    "4": 0.1269,
+    "5": 0.1305,
+    "6": 0.1378,
+    "7": 0.1355,
+    "8": 0.1357
+  },
+  "overall_mean": {
+    "age": 43.78,
+    "income": 88500.8,
+    "spending_score": 50.69,
+    "membership_years": 5.47,
+    "purchase_frequency": 26.6,
+    "last_purchase_amount": 492.35
+  },
+  "segments": [
+    {
+      "id": 0,
+      "name": "New Big-Ticket Buyers",
+      "description": "Compared with the average customer: higher last purchase amount, lower membership years, lower spending score.",
+      "size": 255,
+      "share": 0.255,
+      "profile": {
+        "age": 44.44,
+        "income": 80122.79,
+        "spending_score": 38.53,
+        "membership_years": 3.4,
+        "purchase_frequency": 25.51,
+        "last_purchase_amount": 764.64
+      },
+      "top_category": "Electronics",
+      "gender_mix": {
+        "Other": 0.373,
+        "Male": 0.341,
+        "Female": 0.286
+      }
+    },
+    {
+      "id": 1,
+      "name": "Loyal High Spenders",
+      "description": "Compared with the average customer: higher membership years, higher last purchase amount, higher spending score.",
+      "size": 234,
+      "share": 0.234,
+      "profile": {
+        "age": 47.24,
+        "income": 89898.91,
+        "spending_score": 66.0,
+        "membership_years": 8.33,
+        "purchase_frequency": 32.12,
+        "last_purchase_amount": 672.98
+      },
+      "top_category": "Sports",
+      "gender_mix": {
+        "Male": 0.368,
+        "Other": 0.338,
+        "Female": 0.295
+      }
+    },
+    {
+      "id": 2,
+      "name": "Cautious Low Spenders",
+      "description": "Compared with the average customer: lower spending score, lower last purchase amount, higher membership years.",
+      "size": 266,
+      "share": 0.266,
+      "profile": {
+        "age": 42.99,
+        "income": 93596.56,
+        "spending_score": 24.14,
+        "membership_years": 6.19,
+        "purchase_frequency": 25.53,
+        "last_purchase_amount": 263.57
+      },
+      "top_category": "Sports",
+      "gender_mix": {
+        "Male": 0.365,
+        "Female": 0.323,
+        "Other": 0.312
+      }
+    },
+    {
+      "id": 3,
+      "name": "Engaged Small-Basket Shoppers",
+      "description": "Compared with the average customer: higher spending score, lower last purchase amount, lower membership years.",
+      "size": 245,
+      "share": 0.245,
+      "profile": {
+        "age": 40.67,
+        "income": 90352.89,
+        "spending_score": 77.53,
+        "membership_years": 4.11,
+        "purchase_frequency": 23.62,
+        "last_purchase_amount": 284.81
+      },
+      "top_category": "Groceries",
+      "gender_mix": {
+        "Female": 0.359,
+        "Male": 0.355,
+        "Other": 0.286
+      }
+    }
+  ]
+}
